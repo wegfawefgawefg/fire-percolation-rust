@@ -14,7 +14,7 @@ fn main() {
 
     let (mut rl, thread) = raylib::init()
         .size(screen_dimensions.x as i32, screen_dimensions.y as i32)
-        .fullscreen()
+        // .fullscreen()
         .title("Forest Fire")
         .build();
     
@@ -24,7 +24,7 @@ fn main() {
     let mut grid = vec![vec![Cell::Null; grid_dim.x as usize]; grid_dim.y as usize];
 
     // randomly generate trees at 50% chance
-    let chance = 0.5;
+    let mut chance = 0.5;
     for y in 0..grid_dim.y as usize {
         for x in 0..grid_dim.x as usize {
             if rand::random::<f32>() < chance {
@@ -43,7 +43,6 @@ fn main() {
         // check if r is pressed
         if d.is_key_pressed(KeyboardKey::KEY_R) {
             // randomly generate trees at 50% chance
-            let chance = 0.5;
             for y in 0..grid_dim.y as usize {
                 for x in 0..grid_dim.x as usize {
                     if rand::random::<f32>() < chance {
@@ -57,6 +56,19 @@ fn main() {
             // make left line all fire
             for y in 0..grid_dim.y as usize {
                 grid[y][0] = Cell::Fire;
+            }
+        }
+
+        // do up and down arrow to change chance by 0.1
+        let chance_change = 0.01;
+        if d.is_key_pressed(KeyboardKey::KEY_UP) {
+            if chance < 1.0 {
+                chance += chance_change;
+            }
+        }
+        if d.is_key_pressed(KeyboardKey::KEY_DOWN) {
+            if chance > 0.0 {
+                chance -= chance_change;
             }
         }
 
@@ -124,9 +136,24 @@ fn main() {
             }
         }
         grid = new_grid;
+
         // let itime: f64 = d.get_time() * 1000.0;
         // let time_str = format!("Time: {}", itime);
-        
-        // d.draw_text(&time_str, 12, 12, 20, Color::BLACK);
+        let text_size = 20;
+        let chance_str = format!("Chance: {}", chance);
+        let mut text_cursor = Vector2::new(10.0, 10.0);
+
+        // draw controls
+        let text_color = Color::WHITE;
+        d.draw_text("Press R to reset", 
+            text_cursor.x as i32, text_cursor.y as i32, text_size, text_color);
+        text_cursor.y += text_size as f32;
+        d.draw_text(format!("Press UP and DOWN to change chance by {}", chance_change).as_str(),
+            text_cursor.x as i32, text_cursor.y as i32, text_size, text_color);
+        text_cursor.y += text_size as f32;
+        text_cursor.y += text_size as f32;
+
+        d.draw_text(&chance_str, 
+            text_cursor.x as i32, text_cursor.y as i32, text_size, text_color);
     }
 }
