@@ -29,25 +29,30 @@ fn main() {
 
     let (mut rl, thread) = raylib::init()
         .size(screen_dimensions.x as i32, screen_dimensions.y as i32)
-        // .fullscreen()
+        .fullscreen()
         .title("Forest Fire")
         .build();
     
     
     // 2d grid of 32x32 cells
-    let grid_dim = Vector2::new(128.0, 128.0) * 1.0;
+    let grid_dim = Vector2::new(128.0, 128.0) * 2.0;
     let mut grid = vec![vec![Cell::Null; grid_dim.x as usize]; grid_dim.y as usize];
 
     // randomly generate trees at 50% chance
     let mut chance = 0.5;
     reset_grid(&mut grid, chance);
 
+    let mut auto_reset = true;
     while !rl.window_should_close() {
         let mut d = rl.begin_drawing(&thread);
 
         // check if r is pressed to reset grid
         if d.is_key_pressed(KeyboardKey::KEY_R) {
             reset_grid(&mut grid, chance);
+        }
+        // toggle auto reset if a is pressed
+        if d.is_key_pressed(KeyboardKey::KEY_A) {
+            auto_reset = !auto_reset;
         }
 
         // do up and down arrow to change chance by 0.1
@@ -121,7 +126,9 @@ fn main() {
             }
         }
         if number_of_changed_cells_this_frame == 0 {
-            reset_grid(&mut new_grid, chance);
+            if auto_reset {
+                reset_grid(&mut new_grid, chance);
+            }
         }
         grid = new_grid;
 
@@ -137,6 +144,9 @@ fn main() {
             text_cursor.x as i32, text_cursor.y as i32, text_size, text_color);
         text_cursor.y += text_size as f32;
         d.draw_text(format!("Press UP and DOWN to change chance by {}", chance_change).as_str(),
+            text_cursor.x as i32, text_cursor.y as i32, text_size, text_color);
+        text_cursor.y += text_size as f32;
+        d.draw_text(format!("Press a to toggle auto reset on no activity: currently {}", auto_reset).as_str(),
             text_cursor.x as i32, text_cursor.y as i32, text_size, text_color);
         text_cursor.y += text_size as f32;
         text_cursor.y += text_size as f32;
